@@ -22,99 +22,33 @@
     <!-- Parámetros del Modelo -->
     <div class="parameters">
       <div class="parameter-group">
-        <label for="temperature">
-          Temperature: <span class="value">{{ modelValue.temperature }}</span>
+        <label for="num-documents">
+          Número de Documentos: <span class="value">{{ modelValue.numDocuments }}</span>
         </label>
         <input
-          id="temperature"
-          type="range"
-          min="0"
-          max="2"
-          step="0.1"
-          :value="modelValue.temperature"
-          @input="updateParameter('temperature', $event)"
-        />
-        <small>Controla la creatividad de las respuestas (0 = conservador, 2 = creativo)</small>
-      </div>
-
-      <div class="parameter-group">
-        <label for="max-tokens">
-          Max Tokens: <span class="value">{{ modelValue.maxTokens }}</span>
-        </label>
-        <input
-          id="max-tokens"
-          type="range"
-          min="256"
-          :max="modelInfo[modelValue.model].maxTokens"
-          step="256"
-          :value="modelValue.maxTokens"
-          @input="updateParameter('maxTokens', $event)"
-        />
-        <small>Longitud máxima de la respuesta</small>
-      </div>
-
-      <div class="parameter-group">
-        <label for="top-p">
-          Top P: <span class="value">{{ modelValue.topP }}</span>
-        </label>
-        <input
-          id="top-p"
-          type="range"
-          min="0"
-          max="1"
-          step="0.05"
-          :value="modelValue.topP"
-          @input="updateParameter('topP', $event)"
-        />
-        <small>Nucleus sampling - diversidad de tokens (0.1 = enfocado, 1.0 = diverso)</small>
-      </div>
-
-      <div class="parameter-group">
-        <label for="top-k">
-          Top K: <span class="value">{{ modelValue.topK }}</span>
-        </label>
-        <input
-          id="top-k"
+          id="num-documents"
           type="range"
           min="1"
-          max="100"
+          max="20"
           step="1"
-          :value="modelValue.topK"
-          @input="updateParameter('topK', $event)"
+          :value="modelValue.numDocuments"
+          @input="updateParameter('numDocuments', $event)"
         />
-        <small>Número de tokens candidatos a considerar</small>
+        <small>Cantidad de documentos a recuperar del contexto</small>
       </div>
 
       <div class="parameter-group">
-        <label for="presence-penalty">
-          Presence Penalty: <span class="value">{{ modelValue.presencePenalty }}</span>
+        <label for="use-reranking" class="checkbox-label">
+          <input
+            id="use-reranking"
+            type="checkbox"
+            :checked="modelValue.useReranking"
+            @change="updateCheckbox('useReranking', $event)"
+            class="checkbox-input"
+          />
+          <span class="checkbox-text">Usar Reranking</span>
         </label>
-        <input
-          id="presence-penalty"
-          type="range"
-          min="-2"
-          max="2"
-          step="0.1"
-          :value="modelValue.presencePenalty"
-          @input="updateParameter('presencePenalty', $event)"
-        />
-        <small>Penaliza temas ya mencionados</small>
-      </div>
-
-      <div class="parameter-group">
-        <label for="frequency-penalty">
-          Frequency Penalty: <span class="value">{{ modelValue.frequencyPenalty }}</span>
-        </label>
-        <input
-          id="frequency-penalty"
-          type="range"
-          min="-2"
-          max="2"
-          step="0.1"
-          :value="modelValue.frequencyPenalty"
-          @input="updateParameter('frequencyPenalty', $event)"
-        />
-        <small>Penaliza repeticiones frecuentes</small>
+        <small>Mejora la relevancia de los documentos recuperados usando reordenamiento</small>
       </div>
     </div>
 
@@ -142,8 +76,23 @@ const updateModel = (event: Event) => {
 
 const updateParameter = (param: keyof ChatbotConfig, event: Event) => {
   const target = event.target as HTMLInputElement
-  const value = param === 'model' ? target.value : parseFloat(target.value)
+  let value: string | number | boolean
+  
+  if (param === 'model') {
+    value = target.value
+  } else if (param === 'useReranking') {
+    value = target.checked
+  } else {
+    value = parseInt(target.value, 10)
+  }
+  
   const newConfig = { ...props.modelValue, [param]: value }
+  emit('update:modelValue', newConfig)
+}
+
+const updateCheckbox = (param: keyof ChatbotConfig, event: Event) => {
+  const target = event.target as HTMLInputElement
+  const newConfig = { ...props.modelValue, [param]: target.checked }
   emit('update:modelValue', newConfig)
 }
 
@@ -242,6 +191,7 @@ input[type='range'] {
   border-radius: 3px;
   background: #dee2e6;
   outline: none;
+  appearance: none;
   -webkit-appearance: none;
 }
 
@@ -272,6 +222,25 @@ input[type='range']::-moz-range-thumb {
 
 input[type='range']::-moz-range-thumb:hover {
   background: #2980b9;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.checkbox-input {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #3498db;
+}
+
+.checkbox-text {
+  flex: 1;
 }
 
 small {

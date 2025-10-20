@@ -28,9 +28,11 @@ const {
   config,
   isLoading,
   error,
+  isServerAvailable,
   sendMessage,
   clearChat,
   initializeChat,
+  checkServer,
   messageCount,
 } = useChatbot()
 
@@ -44,9 +46,16 @@ const handleClear = () => {
   }
 }
 
-onMounted(() => {
-  initializeChat()
+onMounted(async () => {
+  await initializeChat()
 })
+
+// Verificar conexión cada 30 segundos
+setInterval(async () => {
+  if (!isLoading.value) {
+    await checkServer()
+  }
+}, 30000)
 </script>
 
 <style scoped>

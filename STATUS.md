@@ -1,0 +1,197 @@
+# 📝 Estado del Proyecto - Frontend Chatbot
+
+## ✅ Archivos del Frontend (Limpios)
+
+### 📂 Estructura del Proyecto
+
+```
+front_chatbot/
+├── src/
+│   ├── components/
+│   │   ├── ChatInput.vue          # Input de mensajes
+│   │   ├── ChatMessage.vue        # Componente de mensaje
+│   │   ├── ChatWindow.vue         # Ventana principal del chat
+│   │   └── ModelSelector.vue      # Selector de modelo y parámetros
+│   ├── composables/
+│   │   └── useChatbot.ts         # Lógica del chatbot con integración API
+│   ├── services/
+│   │   └── api.ts                # Cliente para comunicación con FastAPI
+│   ├── types/
+│   │   └── chatbot.ts            # Tipos TypeScript
+│   ├── views/
+│   │   └── ChatbotView.vue       # Vista principal
+│   ├── router/
+│   │   └── index.ts              # Configuración de rutas
+│   ├── assets/
+│   │   └── main.css              # Estilos globales
+│   ├── App.vue                    # Componente raíz
+│   └── main.ts                    # Punto de entrada
+├── .env.example                   # Ejemplo de variables de entorno
+├── PROJECT_README.md              # Documentación del proyecto
+└── package.json                   # Dependencias
+```
+
+## 🎯 Configuración Actual
+
+### Parámetros del Chatbot
+
+```typescript
+interface ChatbotConfig {
+  model: 'llama' | 'gemini'    // Modelo de IA
+  numDocuments: number          // 1-20 documentos a recuperar
+  useReranking: boolean         // Activar/desactivar reranking
+}
+```
+
+### Valores por Defecto
+
+```typescript
+{
+  model: 'llama',
+  numDocuments: 5,
+  useReranking: false
+}
+```
+
+## 🔌 Integración con Backend
+
+### URL de la API
+
+- **Por defecto:** `http://localhost:8000`
+- **Configurable:** Crea un archivo `.env` basado en `.env.example`
+
+### Endpoints que Consume
+
+1. **POST /chat** (Principal)
+   ```json
+   // Request
+   {
+     "message": "string",
+     "model": "llama" | "gemini",
+     "numDocuments": 1-20,
+     "useReranking": true | false,
+     "conversationHistory": [...]
+   }
+   
+   // Response
+   {
+     "response": "string",
+     "model": "string",
+     "documentsUsed": number,
+     "reranking": boolean
+   }
+   ```
+
+2. **GET /health** (Opcional)
+   ```json
+   { "status": "healthy" }
+   ```
+
+3. **GET /models** (Opcional)
+   ```json
+   { "models": ["llama", "gemini"] }
+   ```
+
+## 🚀 Uso
+
+### Desarrollo
+
+```bash
+npm run dev
+# Servidor en http://localhost:5173
+```
+
+### Build
+
+```bash
+npm run build
+npm run preview
+```
+
+## ✨ Características Implementadas
+
+- ✅ Chat sin mensajes predeterminados
+- ✅ Integración real con API FastAPI
+- ✅ Selector de modelo (LLaMA/Gemini)
+- ✅ Control de número de documentos (1-20)
+- ✅ Toggle de reranking
+- ✅ Historial de conversación
+- ✅ Manejo de errores
+- ✅ Verificación de disponibilidad del servidor
+- ✅ Auto-scroll en mensajes
+- ✅ Diseño responsivo
+
+## 📦 Dependencias
+
+```json
+{
+  "vue": "^3.5.22",
+  "vue-router": "^4.5.1"
+}
+```
+
+## 🔧 Archivos Clave
+
+### `src/services/api.ts`
+Cliente para comunicación con FastAPI. Aquí puedes cambiar la URL base si es necesario.
+
+### `src/types/chatbot.ts`
+Define todos los tipos e interfaces. Modifica aquí si necesitas agregar nuevos parámetros.
+
+### `src/composables/useChatbot.ts`
+Lógica principal del chatbot. Maneja mensajes, configuración y comunicación con la API.
+
+### `src/components/ModelSelector.vue`
+UI para configurar modelo, documentos y reranking.
+
+## 🎨 Personalización
+
+### Cambiar Colores
+
+Edita `src/assets/main.css`:
+
+```css
+:root {
+  --primary-color: #3498db;
+  --secondary-color: #667eea;
+  /* ... */
+}
+```
+
+### Agregar Nuevo Modelo
+
+1. `src/types/chatbot.ts`:
+   ```typescript
+   export type ModelType = 'llama' | 'gemini' | 'nuevo'
+   ```
+
+2. Actualiza `MODEL_INFO` en el mismo archivo
+
+3. Agrega opción en `src/components/ModelSelector.vue`
+
+### Cambiar URL del Backend
+
+Crea `.env`:
+
+```env
+VITE_API_BASE_URL=http://tu-servidor:puerto
+```
+
+## ⚠️ Notas Importantes
+
+- El frontend está **100% listo** para conectarse con tu backend FastAPI
+- **No hay archivos de ejemplo de Python** en este proyecto
+- La comunicación con el backend se maneja en `src/services/api.ts`
+- El frontend verifica automáticamente la disponibilidad del servidor cada 30 segundos
+
+## 🔜 Próximos Pasos
+
+1. Asegúrate de que tu backend FastAPI esté corriendo
+2. Verifica que CORS esté configurado en tu backend
+3. Abre `http://localhost:5173` y prueba el chatbot
+4. Personaliza según tus necesidades
+
+---
+
+**Estado:** ✅ Proyecto limpio y listo para producción
+**Servidor:** 🟢 Corriendo en http://localhost:5173

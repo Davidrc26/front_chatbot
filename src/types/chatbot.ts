@@ -12,12 +12,8 @@ export interface Message {
 
 export interface ChatbotConfig {
   model: ModelType
-  temperature: number
-  maxTokens: number
-  topP: number
-  topK: number
-  presencePenalty: number
-  frequencyPenalty: number
+  numDocuments: number
+  useReranking: boolean
 }
 
 export interface ChatSession {
@@ -31,23 +27,17 @@ export interface ChatSession {
 
 export const DEFAULT_CONFIG: ChatbotConfig = {
   model: 'llama',
-  temperature: 0.7,
-  maxTokens: 2048,
-  topP: 0.9,
-  topK: 40,
-  presencePenalty: 0,
-  frequencyPenalty: 0,
+  numDocuments: 5,
+  useReranking: false,
 }
 
 export const MODEL_INFO = {
   llama: {
     name: 'LLaMA',
-    description: 'Modelo de Meta AI optimizado para conversaciones',
-    maxTokens: 4096,
+    description: 'Modelo de Meta AI optimizado para conversaciones sobre IA',
   },
   gemini: {
     name: 'Gemini',
-    description: 'Modelo de Google AI con capacidades multimodales',
-    maxTokens: 8192,
+    description: 'Modelo de Google AI con capacidades avanzadas',
   },
 }

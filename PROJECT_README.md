@@ -6,11 +6,11 @@ Chatbot interactivo especializado en responder preguntas sobre Inteligencia Arti
 
 - ✅ **Selección de Modelo**: Elige entre LLaMA y Gemini
 - ⚙️ **Parámetros Configurables**:
-  - Temperature (creatividad)
-  - Max Tokens (longitud de respuesta)
-  - Top P y Top K (diversidad)
-  - Presence/Frequency Penalty (repetición)
+  - Número de documentos (1-20): controla cuántos documentos se recuperan del contexto
+  - Reranking: mejora la relevancia de los documentos recuperados
+  - Modelo: selecciona entre LLaMA o Gemini
 - 💬 **Interfaz de Chat Intuitiva**
+- 🔌 **Integración con FastAPI**: conecta con tu backend de IA
 - 🎨 **Diseño Moderno y Responsivo**
 - 📱 **Adaptable a dispositivos móviles**
 
@@ -25,6 +25,8 @@ src/
 │   └── ModelSelector.vue # Selector de modelo y parámetros
 ├── composables/        # Lógica reutilizable (Composition API)
 │   └── useChatbot.ts  # Hook principal del chatbot
+├── services/          # Servicios de API
+│   └── api.ts        # Cliente para comunicación con FastAPI
 ├── types/             # Definiciones TypeScript
 │   └── chatbot.ts    # Tipos e interfaces
 ├── views/            # Vistas/Páginas
@@ -58,45 +60,43 @@ npm run preview
 
 ### Modelos Disponibles
 
-- **LLaMA**: Modelo de Meta AI optimizado para conversaciones
-- **Gemini**: Modelo de Google AI con capacidades multimodales
+- **LLaMA**: Modelo de Meta AI optimizado para conversaciones sobre IA
+- **Gemini**: Modelo de Google AI con capacidades avanzadas
 
 ### Parámetros del Modelo
 
-| Parámetro | Rango | Descripción |
-|-----------|-------|-------------|
-| Temperature | 0-2 | Controla la creatividad (0 = conservador, 2 = creativo) |
-| Max Tokens | 256-8192 | Longitud máxima de la respuesta |
-| Top P | 0-1 | Nucleus sampling - diversidad de tokens |
-| Top K | 1-100 | Número de tokens candidatos |
-| Presence Penalty | -2 a 2 | Penaliza temas repetidos |
-| Frequency Penalty | -2 a 2 | Penaliza palabras frecuentes |
+| Parámetro | Rango/Tipo | Descripción |
+|-----------|------------|-------------|
+| Modelo | llama \| gemini | Selecciona el modelo de IA a utilizar |
+| Número de Documentos | 1-20 | Cantidad de documentos a recuperar del contexto |
+| Usar Reranking | true \| false | Activa el reordenamiento de documentos por relevancia |
 
-## 🔌 Integración con API
+## 🔌 Integración con FastAPI
 
-Actualmente el chatbot usa respuestas simuladas. Para conectar con una API real, modifica la función `simulateApiCall` en `src/composables/useChatbot.ts`:
+Este frontend se conecta con un backend de FastAPI. Asegúrate de que tu API esté corriendo en `http://localhost:8000` (o configura la URL en un archivo `.env`).
 
-```typescript
-// Reemplazar esta función:
-const simulateApiCall = async (
-  userMessage: string,
-  currentConfig: ChatbotConfig
-): Promise<string> => {
-  // TODO: Implementar llamada real a la API
-  const response = await fetch('TU_API_ENDPOINT', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      message: userMessage,
-      config: currentConfig,
-    }),
-  })
-  
-  const data = await response.json()
-  return data.message
-}
+### Endpoints Requeridos
+
+Tu API debe implementar:
+
+- `POST /chat` - Recibe mensajes y devuelve respuestas
+  - Request: `{ message, model, numDocuments, useReranking, conversationHistory }`
+  - Response: `{ response, model, documentsUsed, reranking }`
+- `GET /health` - Verificar estado del servidor (opcional)
+- `GET /models` - Obtener modelos disponibles (opcional)
+
+### Configuración
+
+Si tu API está en otro puerto, crea un archivo `.env`:
+
+```bash
+cp .env.example .env
+```
+
+Y modifica la URL:
+
+```env
+VITE_API_BASE_URL=http://localhost:TU_PUERTO
 ```
 
 ## 🎨 Personalización
@@ -127,12 +127,12 @@ export const MODEL_INFO = {
   nuevoModelo: {
     name: 'Nuevo Modelo',
     description: 'Descripción del nuevo modelo',
-    maxTokens: 4096,
   },
 }
 ```
 
 3. Actualiza el selector en `ModelSelector.vue`
+4. Asegúrate de que tu backend FastAPI soporte el nuevo modelo
 
 ## 🛠️ Tecnologías
 
@@ -144,14 +144,14 @@ export const MODEL_INFO = {
 
 ## 📝 Próximas Características
 
-- [ ] Historial de conversaciones
+- [ ] Historial de conversaciones persistente
 - [ ] Exportar chat a PDF/Markdown
 - [ ] Soporte multiidioma
 - [ ] Modo oscuro
-- [ ] Análisis de sentimientos
-- [ ] Integración con APIs reales (OpenAI, Anthropic, etc.)
-- [ ] Streaming de respuestas
+- [ ] Visualización de documentos recuperados
+- [ ] Streaming de respuestas en tiempo real
 - [ ] Guardar configuraciones personalizadas
+- [ ] Métricas y analytics
 
 ## 📄 Licencia
 

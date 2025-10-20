@@ -12,8 +12,11 @@
 
     <div ref="messagesContainer" class="messages-container">
       <div v-if="messages.length === 0" class="empty-state">
-        <h3>👋 ¡Bienvenido!</h3>
-        <p>Haz una pregunta sobre Inteligencia Artificial para comenzar</p>
+        <h3>🤖 Chatbot de IA</h3>
+        <p>Haz una pregunta sobre Inteligencia Artificial para comenzar la conversación</p>
+        <div class="empty-hints">
+          <small>💡 Configura el modelo y parámetros en el panel lateral</small>
+        </div>
       </div>
 
       <ChatMessage v-for="message in messages" :key="message.id" :message="message" />
@@ -150,6 +153,18 @@ defineExpose({ scrollToBottom })
 
 .empty-state p {
   font-size: 1rem;
+}
+
+.empty-hints {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(52, 152, 219, 0.1);
+  border-radius: 8px;
+}
+
+.empty-hints small {
+  color: #3498db;
+  font-size: 0.9rem;
 }
 
 .loading-message {
