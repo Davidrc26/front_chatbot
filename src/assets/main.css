@@ -1,10 +1,16 @@
-<script setup lang="ts"></script>
+/* Estilos globales para el chatbot */
+:root {
+  --primary-color: #3498db;
+  --secondary-color: #667eea;
+  --success-color: #2ecc71;
+  --danger-color: #e74c3c;
+  --warning-color: #f39c12;
+  --text-color: #2c3e50;
+  --text-secondary: #7f8c8d;
+  --bg-color: #f8f9fa;
+  --border-color: #dee2e6;
+}
 
-<template>
-  <RouterView />
-</template>
-
-<style>
 * {
   margin: 0;
   padding: 0;
@@ -16,6 +22,7 @@ body {
     'Open Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color: var(--text-color);
 }
 
 #app {
@@ -23,4 +30,3 @@ body {
   height: 100vh;
   overflow: hidden;
 }
-</style>
