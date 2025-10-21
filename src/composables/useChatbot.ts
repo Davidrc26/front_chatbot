@@ -1,5 +1,5 @@
 import { ref, computed } from 'vue'
-import type { Message, ChatbotConfig, ModelType } from '@/types/chatbot'
+import type { Message, ChatbotConfig } from '@/types/chatbot'
 import { DEFAULT_CONFIG } from '@/types/chatbot'
 import { chatbotApi } from '@/services/api'
 
@@ -43,24 +43,25 @@ export function useChatbot() {
 
     try {
       // Llamada real a la API de FastAPI
-      const response = await chatbotApi.sendMessage(
-        content.trim(),
-        config.value,
-        messages.value.slice(0, -1) // Excluir el último mensaje (el que acabamos de agregar)
-      )
+      const response = await chatbotApi.sendMessage(content.trim(), config.value)
+
+      if (!response.success) {
+        throw new Error('La respuesta del servidor indica un error')
+      }
 
       const assistantMessage: Message = {
         id: generateId(),
         role: 'assistant',
         content: response.response,
         timestamp: new Date(),
-        model: config.value.model,
+        sources: response.sources,
+        metadatas: response.metadatas,
       }
       messages.value.push(assistantMessage)
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Error al procesar el mensaje'
       console.error('Error:', err)
-      
+
       // Remover el mensaje del usuario si hay error
       messages.value.pop()
     } finally {
@@ -71,11 +72,6 @@ export function useChatbot() {
   // Actualizar configuración
   const updateConfig = (newConfig: Partial<ChatbotConfig>) => {
     config.value = { ...config.value, ...newConfig }
-  }
-
-  // Cambiar modelo
-  const changeModel = (model: ModelType) => {
-    config.value.model = model
   }
 
   // Limpiar chat
@@ -90,6 +86,11 @@ export function useChatbot() {
     return isServerAvailable.value
   }
 
+  // Obtener ID de usuario
+  const getUserId = () => {
+    return chatbotApi.getUserId()
+  }
+
   // Computed
   const messageCount = computed(() => messages.value.length)
   const lastMessage = computed(() => messages.value[messages.value.length - 1])
@@ -102,10 +103,10 @@ export function useChatbot() {
     isServerAvailable,
     sendMessage,
     updateConfig,
-    changeModel,
     clearChat,
     initializeChat,
     checkServer,
+    getUserId,
     messageCount,
     lastMessage,
   }

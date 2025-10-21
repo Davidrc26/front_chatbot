@@ -6,50 +6,49 @@ const API_BASE_URL = 'http://localhost:8000' // Cambia el puerto si es necesario
 
 export interface ChatRequest {
   message: string
-  model: string
-  numDocuments: number
-  useReranking: boolean
-  conversationHistory?: Array<{ role: string; content: string }>
+  user_id?: string
+  use_rag?: boolean
+  n_results?: number
+  use_rerank?: boolean
 }
 
 export interface ChatResponse {
   response: string
-  model: string
-  documentsUsed?: number
-  reranking?: boolean
-  error?: string
+  success: boolean
+  sources?: string[]
+  metadatas?: Array<Record<string, unknown>>
+  found_documents?: boolean
+  reranked?: boolean
 }
 
 export class ChatbotApiService {
   private baseUrl: string
+  private userId: string
 
   constructor(baseUrl: string = API_BASE_URL) {
     this.baseUrl = baseUrl
+    // Generar un ID de usuario único para la sesión
+    this.userId = this.generateUserId()
+  }
+
+  /**
+   * Genera un ID único para el usuario
+   */
+  private generateUserId(): string {
+    return `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
   }
 
   /**
    * Envía un mensaje al chatbot de FastAPI
    */
-  async sendMessage(
-    message: string,
-    config: ChatbotConfig,
-    conversationHistory: Message[] = []
-  ): Promise<ChatResponse> {
+  async sendMessage(message: string, config: ChatbotConfig): Promise<ChatResponse> {
     try {
-      // Formatear el historial de conversación para la API
-      const history = conversationHistory
-        .filter((msg) => msg.role !== 'system')
-        .map((msg) => ({
-          role: msg.role,
-          content: msg.content,
-        }))
-
       const requestBody: ChatRequest = {
         message,
-        model: config.model,
-        numDocuments: config.numDocuments,
-        useReranking: config.useReranking,
-        conversationHistory: history.length > 0 ? history : undefined,
+        user_id: this.userId,
+        use_rag: config.useRag,
+        n_results: config.nResults,
+        use_rerank: config.useRerank,
       }
 
       const response = await fetch(`${this.baseUrl}/chat`, {
@@ -93,24 +92,10 @@ export class ChatbotApiService {
   }
 
   /**
-   * Obtiene los modelos disponibles
+   * Obtiene el ID del usuario actual
    */
-  async getAvailableModels(): Promise<string[]> {
-    try {
-      const response = await fetch(`${this.baseUrl}/models`, {
-        method: 'GET',
-      })
-
-      if (!response.ok) {
-        throw new Error('Error al obtener modelos disponibles')
-      }
-
-      const data = await response.json()
-      return data.models || ['llama', 'gemini']
-    } catch (error) {
-      console.error('Error obteniendo modelos:', error)
-      return ['llama', 'gemini'] // Valores por defecto
-    }
+  getUserId(): string {
+    return this.userId
   }
 }
 

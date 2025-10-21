@@ -1,64 +1,73 @@
 <template>
   <div class="model-selector">
-    <h3>Configuración del Modelo</h3>
-
-    <!-- Selector de Modelo -->
-    <div class="config-section">
-      <label for="model-select">Modelo de IA:</label>
-      <select
-        id="model-select"
-        :value="modelValue.model"
-        @change="updateModel($event)"
-        class="model-select"
-      >
-        <option value="llama">LLaMA</option>
-        <option value="gemini">Gemini</option>
-      </select>
-      <p class="model-description">
-        {{ modelInfo[modelValue.model].description }}
-      </p>
-    </div>
+    <h3>⚙️ Configuración del Chatbot</h3>
 
     <!-- Parámetros del Modelo -->
     <div class="parameters">
       <div class="parameter-group">
-        <label for="num-documents">
-          Número de Documentos: <span class="value">{{ modelValue.numDocuments }}</span>
-        </label>
-        <input
-          id="num-documents"
-          type="range"
-          min="1"
-          max="20"
-          step="1"
-          :value="modelValue.numDocuments"
-          @input="updateParameter('numDocuments', $event)"
-        />
-        <small>Cantidad de documentos a recuperar del contexto</small>
-      </div>
-
-      <div class="parameter-group">
-        <label for="use-reranking" class="checkbox-label">
+        <label for="use-rag" class="checkbox-label">
           <input
-            id="use-reranking"
+            id="use-rag"
             type="checkbox"
-            :checked="modelValue.useReranking"
-            @change="updateCheckbox('useReranking', $event)"
+            :checked="modelValue.useRag"
+            @change="updateCheckbox('useRag', $event)"
             class="checkbox-input"
           />
-          <span class="checkbox-text">Usar Reranking</span>
+          <span class="checkbox-text">{{ configInfo.useRag.label }}</span>
         </label>
-        <small>Mejora la relevancia de los documentos recuperados usando reordenamiento</small>
+        <small>{{ configInfo.useRag.description }}</small>
+      </div>
+
+      <div class="parameter-group" :class="{ disabled: !modelValue.useRag }">
+        <label for="n-results">
+          {{ configInfo.nResults.label }}: <span class="value">{{ modelValue.nResults }}</span>
+        </label>
+        <input
+          id="n-results"
+          type="range"
+          :min="configInfo.nResults.min"
+          :max="configInfo.nResults.max"
+          step="1"
+          :value="modelValue.nResults"
+          :disabled="!modelValue.useRag"
+          @input="updateParameter('nResults', $event)"
+        />
+        <small>{{ configInfo.nResults.description }}</small>
+      </div>
+
+      <div class="parameter-group" :class="{ disabled: !modelValue.useRag }">
+        <label for="use-rerank" class="checkbox-label">
+          <input
+            id="use-rerank"
+            type="checkbox"
+            :checked="modelValue.useRerank"
+            :disabled="!modelValue.useRag"
+            @change="updateCheckbox('useRerank', $event)"
+            class="checkbox-input"
+          />
+          <span class="checkbox-text">{{ configInfo.useRerank.label }}</span>
+        </label>
+        <small>{{ configInfo.useRerank.description }}</small>
       </div>
     </div>
 
     <button @click="resetToDefaults" class="reset-btn">Restablecer valores por defecto</button>
+
+    <div class="info-section">
+      <h4>ℹ️ Información</h4>
+      <div class="info-item">
+        <strong>RAG:</strong> Retrieval Augmented Generation - busca en documentos para dar respuestas más precisas
+      </div>
+      <div class="info-item">
+        <strong>Reranking:</strong> Reordena los documentos encontrados para mostrar los más relevantes primero
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { ChatbotConfig, ModelType } from '@/types/chatbot'
-import { MODEL_INFO, DEFAULT_CONFIG } from '@/types/chatbot'
+import type { ChatbotConfig } from '@/types/chatbot'
+import { CONFIG_INFO, DEFAULT_CONFIG } from '@/types/chatbot'
 
 const props = defineProps<{
   modelValue: ChatbotConfig
@@ -68,24 +77,9 @@ const emit = defineEmits<{
   'update:modelValue': [config: ChatbotConfig]
 }>()
 
-const updateModel = (event: Event) => {
-  const target = event.target as HTMLSelectElement
-  const newConfig = { ...props.modelValue, model: target.value as ModelType }
-  emit('update:modelValue', newConfig)
-}
-
 const updateParameter = (param: keyof ChatbotConfig, event: Event) => {
   const target = event.target as HTMLInputElement
-  let value: string | number | boolean
-  
-  if (param === 'model') {
-    value = target.value
-  } else if (param === 'useReranking') {
-    value = target.checked
-  } else {
-    value = parseInt(target.value, 10)
-  }
-  
+  const value = parseInt(target.value, 10)
   const newConfig = { ...props.modelValue, [param]: value }
   emit('update:modelValue', newConfig)
 }
@@ -100,7 +94,7 @@ const resetToDefaults = () => {
   emit('update:modelValue', { ...DEFAULT_CONFIG })
 }
 
-const modelInfo = MODEL_INFO
+const configInfo = CONFIG_INFO
 </script>
 
 <style scoped>
@@ -168,6 +162,12 @@ label {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  transition: opacity 0.3s;
+}
+
+.parameter-group.disabled {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .parameter-group label {
@@ -269,5 +269,35 @@ small {
 
 .reset-btn:active {
   transform: translateY(1px);
+}
+
+.info-section {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #e8f4f8;
+  border-radius: 8px;
+  border-left: 4px solid #3498db;
+}
+
+.info-section h4 {
+  margin: 0 0 0.75rem 0;
+  color: #2c3e50;
+  font-size: 0.95rem;
+}
+
+.info-item {
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: #34495e;
+}
+
+.info-item:last-child {
+  margin-bottom: 0;
+}
+
+.info-item strong {
+  color: #2c3e50;
+  font-weight: 600;
 }
 </style>

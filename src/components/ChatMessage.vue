@@ -4,11 +4,23 @@
       <span class="message-role">
         {{ roleLabel }}
       </span>
-      <span v-if="message.model" class="message-model">{{ message.model }}</span>
       <span class="message-time">{{ formattedTime }}</span>
     </div>
     <div class="message-content">
       {{ message.content }}
+    </div>
+    
+    <!-- Mostrar fuentes si existen -->
+    <div v-if="message.sources && message.sources.length > 0" class="message-sources">
+      <details>
+        <summary>📚 Fuentes consultadas ({{ message.sources.length }})</summary>
+        <div class="sources-list">
+          <div v-for="(source, index) in message.sources" :key="index" class="source-item">
+            <strong>Documento {{ index + 1 }}:</strong>
+            <p>{{ truncateSource(source) }}</p>
+          </div>
+        </div>
+      </details>
     </div>
   </div>
 </template>
@@ -36,6 +48,11 @@ const formattedTime = computed(() => {
     minute: '2-digit',
   })
 })
+
+const truncateSource = (source: string, maxLength: number = 300): string => {
+  if (source.length <= maxLength) return source
+  return source.substring(0, maxLength) + '...'
+}
 </script>
 
 <style scoped>
@@ -113,5 +130,79 @@ const formattedTime = computed(() => {
 
 .message-user .message-content {
   font-weight: 500;
+}
+
+.message-sources {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.message-assistant .message-sources {
+  border-top-color: rgba(0, 0, 0, 0.1);
+}
+
+.message-sources details {
+  cursor: pointer;
+}
+
+.message-sources summary {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #2c3e50;
+  user-select: none;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.message-sources summary:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.sources-list {
+  margin-top: 0.5rem;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.source-item {
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.source-item strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: #2c3e50;
+}
+
+.source-item p {
+  margin: 0;
+  color: #555;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.sources-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sources-list::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+}
+
+.sources-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.sources-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
 }
 </style>

@@ -4,13 +4,14 @@ Chatbot interactivo especializado en responder preguntas sobre Inteligencia Arti
 
 ## 🌟 Características
 
-- ✅ **Selección de Modelo**: Elige entre LLaMA y Gemini
+- ✅ **RAG (Retrieval Augmented Generation)**: Búsqueda en documentos para respuestas contextualizadas
 - ⚙️ **Parámetros Configurables**:
-  - Número de documentos (1-20): controla cuántos documentos se recuperan del contexto
+  - Usar RAG: activa/desactiva la búsqueda en documentos
+  - Número de documentos (1-20): controla cuántos documentos se recuperan
   - Reranking: mejora la relevancia de los documentos recuperados
-  - Modelo: selecciona entre LLaMA o Gemini
 - 💬 **Interfaz de Chat Intuitiva**
 - 🔌 **Integración con FastAPI**: conecta con tu backend de IA
+- 📚 **Visualización de Fuentes**: muestra los documentos consultados
 - 🎨 **Diseño Moderno y Responsivo**
 - 📱 **Adaptable a dispositivos móviles**
 
@@ -58,18 +59,23 @@ npm run preview
 
 ## 🔧 Configuración
 
-### Modelos Disponibles
+### Parámetros Disponibles
 
-- **LLaMA**: Modelo de Meta AI optimizado para conversaciones sobre IA
-- **Gemini**: Modelo de Google AI con capacidades avanzadas
+| Parámetro | Tipo | Descripción |
+|-----------|------|-------------|
+| Usar RAG | boolean | Activa la búsqueda en documentos (Retrieval Augmented Generation) |
+| Número de Documentos | 1-20 | Cantidad de documentos a recuperar del contexto (solo si RAG está activo) |
+| Usar Reranking | boolean | Reordena documentos por relevancia para mejorar calidad (solo si RAG está activo) |
 
-### Parámetros del Modelo
+### Valores por Defecto
 
-| Parámetro | Rango/Tipo | Descripción |
-|-----------|------------|-------------|
-| Modelo | llama \| gemini | Selecciona el modelo de IA a utilizar |
-| Número de Documentos | 1-20 | Cantidad de documentos a recuperar del contexto |
-| Usar Reranking | true \| false | Activa el reordenamiento de documentos por relevancia |
+```typescript
+{
+  useRag: true,
+  nResults: 3,
+  useRerank: true
+}
+```
 
 ## 🔌 Integración con FastAPI
 
@@ -77,13 +83,39 @@ Este frontend se conecta con un backend de FastAPI. Asegúrate de que tu API est
 
 ### Endpoints Requeridos
 
-Tu API debe implementar:
+**POST /chat** - Endpoint principal
 
-- `POST /chat` - Recibe mensajes y devuelve respuestas
-  - Request: `{ message, model, numDocuments, useReranking, conversationHistory }`
-  - Response: `{ response, model, documentsUsed, reranking }`
-- `GET /health` - Verificar estado del servidor (opcional)
-- `GET /models` - Obtener modelos disponibles (opcional)
+Request:
+```json
+{
+  "message": "¿Qué es la inteligencia artificial?",
+  "user_id": "user-123456",
+  "use_rag": true,
+  "n_results": 3,
+  "use_rerank": true
+}
+```
+
+Response:
+```json
+{
+  "response": "La inteligencia artificial es...",
+  "success": true,
+  "sources": ["documento 1...", "documento 2..."],
+  "metadatas": [{...}, {...}],
+  "found_documents": true,
+  "reranked": true
+}
+```
+
+**GET /health** - Verificación de disponibilidad (opcional)
+
+Response:
+```json
+{
+  "status": "healthy"
+}
+```
 
 ### Configuración
 
@@ -103,36 +135,32 @@ VITE_API_BASE_URL=http://localhost:TU_PUERTO
 
 ### Cambiar Colores
 
-Edita las variables CSS en `src/assets/main.css`:
+Edita `src/assets/main.css`:
 
 ```css
 :root {
   --primary-color: #3498db;
   --secondary-color: #667eea;
-  /* ... más colores */
+  /* ... */
 }
 ```
 
-### Agregar Nuevos Modelos
+### Ajustar Rango de Documentos
 
-1. Actualiza el tipo `ModelType` en `src/types/chatbot.ts`:
-```typescript
-export type ModelType = 'llama' | 'gemini' | 'nuevoModelo'
-```
+Edita `src/types/chatbot.ts`:
 
-2. Agrega la información del modelo en `MODEL_INFO`:
 ```typescript
-export const MODEL_INFO = {
-  // ...modelos existentes
-  nuevoModelo: {
-    name: 'Nuevo Modelo',
-    description: 'Descripción del nuevo modelo',
+export const CONFIG_INFO = {
+  // ...
+  nResults: {
+    label: 'Número de Documentos',
+    description: 'Cantidad de documentos a recuperar del contexto',
+    min: 1,
+    max: 20, // Cambia este valor
   },
+  // ...
 }
 ```
-
-3. Actualiza el selector en `ModelSelector.vue`
-4. Asegúrate de que tu backend FastAPI soporte el nuevo modelo
 
 ## 🛠️ Tecnologías
 

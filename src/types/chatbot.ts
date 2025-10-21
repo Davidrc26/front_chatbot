@@ -7,13 +7,14 @@ export interface Message {
   role: 'user' | 'assistant' | 'system'
   content: string
   timestamp: Date
-  model?: ModelType
+  sources?: string[]
+  metadatas?: Array<Record<string, unknown>>
 }
 
 export interface ChatbotConfig {
-  model: ModelType
-  numDocuments: number
-  useReranking: boolean
+  useRag: boolean
+  nResults: number
+  useRerank: boolean
 }
 
 export interface ChatSession {
@@ -26,18 +27,24 @@ export interface ChatSession {
 }
 
 export const DEFAULT_CONFIG: ChatbotConfig = {
-  model: 'llama',
-  numDocuments: 5,
-  useReranking: false,
+  useRag: true,
+  nResults: 3,
+  useRerank: true,
 }
 
-export const MODEL_INFO = {
-  llama: {
-    name: 'LLaMA',
-    description: 'Modelo de Meta AI optimizado para conversaciones sobre IA',
+export const CONFIG_INFO = {
+  useRag: {
+    label: 'Usar RAG',
+    description: 'Activar búsqueda en documentos para contextualizar las respuestas',
   },
-  gemini: {
-    name: 'Gemini',
-    description: 'Modelo de Google AI con capacidades avanzadas',
+  nResults: {
+    label: 'Número de Documentos',
+    description: 'Cantidad de documentos a recuperar del contexto',
+    min: 1,
+    max: 20,
+  },
+  useRerank: {
+    label: 'Usar Reranking',
+    description: 'Aplicar reordenamiento para mejorar la calidad (recomendado)',
   },
 }

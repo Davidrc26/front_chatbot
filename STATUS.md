@@ -37,9 +37,9 @@ front_chatbot/
 
 ```typescript
 interface ChatbotConfig {
-  model: 'llama' | 'gemini'    // Modelo de IA
-  numDocuments: number          // 1-20 documentos a recuperar
-  useReranking: boolean         // Activar/desactivar reranking
+  useRag: boolean      // Activar búsqueda en documentos (RAG)
+  nResults: number     // 1-20 documentos a recuperar
+  useRerank: boolean   // Activar/desactivar reranking
 }
 ```
 
@@ -47,9 +47,9 @@ interface ChatbotConfig {
 
 ```typescript
 {
-  model: 'llama',
-  numDocuments: 5,
-  useReranking: false
+  useRag: true,
+  nResults: 3,
+  useRerank: true
 }
 ```
 
@@ -67,29 +67,26 @@ interface ChatbotConfig {
    // Request
    {
      "message": "string",
-     "model": "llama" | "gemini",
-     "numDocuments": 1-20,
-     "useReranking": true | false,
-     "conversationHistory": [...]
+     "user_id": "string (opcional)",
+     "use_rag": true | false,
+     "n_results": 1-20,
+     "use_rerank": true | false
    }
    
    // Response
    {
      "response": "string",
-     "model": "string",
-     "documentsUsed": number,
-     "reranking": boolean
+     "success": boolean,
+     "sources": ["string"],
+     "metadatas": [{...}],
+     "found_documents": boolean,
+     "reranked": boolean
    }
    ```
 
 2. **GET /health** (Opcional)
    ```json
    { "status": "healthy" }
-   ```
-
-3. **GET /models** (Opcional)
-   ```json
-   { "models": ["llama", "gemini"] }
    ```
 
 ## 🚀 Uso
@@ -112,14 +109,16 @@ npm run preview
 
 - ✅ Chat sin mensajes predeterminados
 - ✅ Integración real con API FastAPI
-- ✅ Selector de modelo (LLaMA/Gemini)
+- ✅ Toggle para activar/desactivar RAG
 - ✅ Control de número de documentos (1-20)
-- ✅ Toggle de reranking
-- ✅ Historial de conversación
+- ✅ Toggle de reranking (se desactiva si RAG está off)
+- ✅ Visualización de fuentes consultadas en cada respuesta
+- ✅ ID de usuario único por sesión
 - ✅ Manejo de errores
 - ✅ Verificación de disponibilidad del servidor
 - ✅ Auto-scroll en mensajes
 - ✅ Diseño responsivo
+- ✅ Sección informativa sobre RAG y Reranking
 
 ## 📦 Dependencias
 
@@ -136,13 +135,13 @@ npm run preview
 Cliente para comunicación con FastAPI. Aquí puedes cambiar la URL base si es necesario.
 
 ### `src/types/chatbot.ts`
-Define todos los tipos e interfaces. Modifica aquí si necesitas agregar nuevos parámetros.
-
-### `src/composables/useChatbot.ts`
-Lógica principal del chatbot. Maneja mensajes, configuración y comunicación con la API.
+Define todos los tipos e interfaces. Modifica aquí si necesitas agregar nuevos parámetros o cambiar rangos.
 
 ### `src/components/ModelSelector.vue`
-UI para configurar modelo, documentos y reranking.
+UI para configurar RAG, documentos y reranking. Los controles de documentos y reranking se deshabilitan automáticamente si RAG está desactivado.
+
+### `src/components/ChatMessage.vue`
+Muestra mensajes con soporte para visualizar fuentes consultadas. Las fuentes se muestran en un accordion expandible.
 
 ## 🎨 Personalización
 
@@ -158,16 +157,27 @@ Edita `src/assets/main.css`:
 }
 ```
 
-### Agregar Nuevo Modelo
+### Cambiar Rango de Documentos
 
-1. `src/types/chatbot.ts`:
-   ```typescript
-   export type ModelType = 'llama' | 'gemini' | 'nuevo'
-   ```
+Edita `src/types/chatbot.ts`:
 
-2. Actualiza `MODEL_INFO` en el mismo archivo
+```typescript
+export const CONFIG_INFO = {
+  nResults: {
+    min: 1,
+    max: 20, // Cambia este valor según necesites
+  },
+}
+```
 
-3. Agrega opción en `src/components/ModelSelector.vue`
+### Ver User ID de la Sesión
+
+El frontend genera automáticamente un `user_id` único por sesión. Puedes accederlo:
+
+```typescript
+const { getUserId } = useChatbot()
+console.log(getUserId()) // user-1234567890-abc123
+```
 
 ### Cambiar URL del Backend
 
