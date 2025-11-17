@@ -1,6 +1,7 @@
 // Tipos para el chatbot
 
 export type ModelType = 'llama' | 'gemini'
+export type ChatMode = 'simple' | 'rag' | 'conversation'
 
 export interface Message {
   id: string
@@ -12,7 +13,8 @@ export interface Message {
 }
 
 export interface ChatbotConfig {
-  useRag: boolean
+  provider: ModelType
+  chatMode: ChatMode
   nResults: number
   useRerank: boolean
 }
@@ -27,19 +29,33 @@ export interface ChatSession {
 }
 
 export const DEFAULT_CONFIG: ChatbotConfig = {
-  useRag: true,
+  provider: 'llama',
+  chatMode: 'conversation',
   nResults: 3,
   useRerank: true,
 }
 
 export const CONFIG_INFO = {
-  useRag: {
-    label: 'Usar RAG',
-    description: 'Activar búsqueda en documentos para contextualizar las respuestas',
+  provider: {
+    label: 'Proveedor LLM',
+    description: 'Modelo de lenguaje a utilizar',
+    options: {
+      llama: { name: 'LLaMA', description: 'Modelo de Meta AI' },
+      gemini: { name: 'Gemini', description: 'Modelo de Google AI' },
+    },
+  },
+  chatMode: {
+    label: 'Modo de Chat',
+    description: 'Tipo de interacción con el chatbot',
+    options: {
+      simple: { name: 'Simple', description: 'Sin contexto de documentos' },
+      rag: { name: 'RAG', description: 'Con búsqueda en documentos' },
+      conversation: { name: 'Conversación', description: 'Con historial y RAG' },
+    },
   },
   nResults: {
     label: 'Número de Documentos',
-    description: 'Cantidad de documentos a recuperar del contexto',
+    description: 'Cantidad de documentos a recuperar (solo en modo RAG/Conversación)',
     min: 1,
     max: 20,
   },

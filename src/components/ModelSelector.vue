@@ -2,23 +2,43 @@
   <div class="model-selector">
     <h3>⚙️ Configuración del Chatbot</h3>
 
-    <!-- Parámetros del Modelo -->
-    <div class="parameters">
-      <div class="parameter-group">
-        <label for="use-rag" class="checkbox-label">
-          <input
-            id="use-rag"
-            type="checkbox"
-            :checked="modelValue.useRag"
-            @change="updateCheckbox('useRag', $event)"
-            class="checkbox-input"
-          />
-          <span class="checkbox-text">{{ configInfo.useRag.label }}</span>
-        </label>
-        <small>{{ configInfo.useRag.description }}</small>
-      </div>
+    <!-- Selector de Proveedor -->
+    <div class="parameter-group">
+      <label for="provider">{{ configInfo.provider.label }}:</label>
+      <select
+        id="provider"
+        :value="modelValue.provider"
+        @change="updateProvider($event)"
+        class="provider-select"
+      >
+        <option value="llama">{{ configInfo.provider.options.llama.name }}</option>
+        <option value="gemini">{{ configInfo.provider.options.gemini.name }}</option>
+      </select>
+      <small>{{ configInfo.provider.options[modelValue.provider].description }}</small>
+    </div>
 
-      <div class="parameter-group" :class="{ disabled: !modelValue.useRag }">
+    <!-- Selector de Modo de Chat -->
+    <div class="parameter-group">
+      <label for="chat-mode">{{ configInfo.chatMode.label }}:</label>
+      <select
+        id="chat-mode"
+        :value="modelValue.chatMode"
+        @change="updateChatMode($event)"
+        class="mode-select"
+      >
+        <option value="simple">{{ configInfo.chatMode.options.simple.name }}</option>
+        <option value="rag">{{ configInfo.chatMode.options.rag.name }}</option>
+        <option value="conversation">{{ configInfo.chatMode.options.conversation.name }}</option>
+      </select>
+      <small>{{ configInfo.chatMode.options[modelValue.chatMode].description }}</small>
+    </div>
+
+    <!-- Parámetros de RAG -->
+    <div class="parameters">
+      <div
+        class="parameter-group"
+        :class="{ disabled: modelValue.chatMode === 'simple' }"
+      >
         <label for="n-results">
           {{ configInfo.nResults.label }}: <span class="value">{{ modelValue.nResults }}</span>
         </label>
@@ -29,19 +49,22 @@
           :max="configInfo.nResults.max"
           step="1"
           :value="modelValue.nResults"
-          :disabled="!modelValue.useRag"
+          :disabled="modelValue.chatMode === 'simple'"
           @input="updateParameter('nResults', $event)"
         />
         <small>{{ configInfo.nResults.description }}</small>
       </div>
 
-      <div class="parameter-group" :class="{ disabled: !modelValue.useRag }">
+      <div
+        class="parameter-group"
+        :class="{ disabled: modelValue.chatMode === 'simple' }"
+      >
         <label for="use-rerank" class="checkbox-label">
           <input
             id="use-rerank"
             type="checkbox"
             :checked="modelValue.useRerank"
-            :disabled="!modelValue.useRag"
+            :disabled="modelValue.chatMode === 'simple'"
             @change="updateCheckbox('useRerank', $event)"
             class="checkbox-input"
           />
@@ -54,19 +77,22 @@
     <button @click="resetToDefaults" class="reset-btn">Restablecer valores por defecto</button>
 
     <div class="info-section">
-      <h4>ℹ️ Información</h4>
+      <h4>ℹ️ Modos de Chat</h4>
       <div class="info-item">
-        <strong>RAG:</strong> Retrieval Augmented Generation - busca en documentos para dar respuestas más precisas
+        <strong>Simple:</strong> Respuestas directas sin buscar en documentos
       </div>
       <div class="info-item">
-        <strong>Reranking:</strong> Reordena los documentos encontrados para mostrar los más relevantes primero
+        <strong>RAG:</strong> Busca información en documentos para dar respuestas más precisas
+      </div>
+      <div class="info-item">
+        <strong>Conversación:</strong> Mantiene el historial de la conversación + RAG
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { ChatbotConfig } from '@/types/chatbot'
+import type { ChatbotConfig, ModelType, ChatMode } from '@/types/chatbot'
 import { CONFIG_INFO, DEFAULT_CONFIG } from '@/types/chatbot'
 
 const props = defineProps<{
@@ -76,6 +102,18 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:modelValue': [config: ChatbotConfig]
 }>()
+
+const updateProvider = (event: Event) => {
+  const target = event.target as HTMLSelectElement
+  const newConfig = { ...props.modelValue, provider: target.value as ModelType }
+  emit('update:modelValue', newConfig)
+}
+
+const updateChatMode = (event: Event) => {
+  const target = event.target as HTMLSelectElement
+  const newConfig = { ...props.modelValue, chatMode: target.value as ChatMode }
+  emit('update:modelValue', newConfig)
+}
 
 const updateParameter = (param: keyof ChatbotConfig, event: Event) => {
   const target = event.target as HTMLInputElement
@@ -163,6 +201,30 @@ label {
   flex-direction: column;
   gap: 0.5rem;
   transition: opacity 0.3s;
+}
+
+.provider-select,
+.mode-select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #dee2e6;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.provider-select:hover,
+.mode-select:hover {
+  border-color: #3498db;
+}
+
+.provider-select:focus,
+.mode-select:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
 .parameter-group.disabled {
@@ -286,7 +348,7 @@ small {
 }
 
 .info-item {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
   font-size: 0.85rem;
   line-height: 1.4;
   color: #34495e;
@@ -299,5 +361,7 @@ small {
 .info-item strong {
   color: #2c3e50;
   font-weight: 600;
+  display: block;
+  margin-bottom: 0.2rem;
 }
 </style>

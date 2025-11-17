@@ -42,8 +42,13 @@ export function useChatbot() {
     error.value = null
 
     try {
-      // Llamada real a la API de FastAPI
-      const response = await chatbotApi.sendMessage(content.trim(), config.value)
+      // Llamada real a la API de FastAPI según el modo
+      // Pasar el historial sin el último mensaje (el que acabamos de agregar)
+      const response = await chatbotApi.sendMessage(
+        content.trim(),
+        config.value,
+        messages.value.slice(0, -1)
+      )
 
       if (!response.success) {
         throw new Error('La respuesta del servidor indica un error')
