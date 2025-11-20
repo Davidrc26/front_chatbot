@@ -1,7 +1,7 @@
 // Tipos para el chatbot
 
 export type ModelType = 'llama' | 'gemini'
-export type ChatMode = 'simple' | 'rag' | 'conversation'
+export type ChatMode = 'simple' | 'rag' | 'rag-llamaindex' | 'conversation'
 
 export interface Message {
   id: string
@@ -50,6 +50,7 @@ export const CONFIG_INFO = {
     options: {
       simple: { name: 'Simple', description: 'Sin contexto de documentos' },
       rag: { name: 'RAG', description: 'Con búsqueda en documentos' },
+      'rag-llamaindex': { name: 'RAG LlamaIndex', description: 'RAG con gestión LlamaIndex' },
       conversation: { name: 'Conversación', description: 'Con historial y RAG' },
     },
   },

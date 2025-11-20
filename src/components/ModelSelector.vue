@@ -28,6 +28,7 @@
       >
         <option value="simple">{{ configInfo.chatMode.options.simple.name }}</option>
         <option value="rag">{{ configInfo.chatMode.options.rag.name }}</option>
+        <option value="rag-llamaindex">{{ configInfo.chatMode.options['rag-llamaindex'].name }}</option>
         <option value="conversation">{{ configInfo.chatMode.options.conversation.name }}</option>
       </select>
       <small>{{ configInfo.chatMode.options[modelValue.chatMode].description }}</small>
@@ -83,6 +84,9 @@
       </div>
       <div class="info-item">
         <strong>RAG:</strong> Busca información en documentos para dar respuestas más precisas
+      </div>
+      <div class="info-item">
+        <strong>RAG LlamaIndex:</strong> RAG avanzado con gestión de documentos mediante LlamaIndex
       </div>
       <div class="info-item">
         <strong>Conversación:</strong> Mantiene el historial de la conversación + RAG

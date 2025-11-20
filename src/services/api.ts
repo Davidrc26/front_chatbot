@@ -69,6 +69,8 @@ export class ChatbotApiService {
         return this.sendSimpleMessage(message, provider)
       case 'rag':
         return this.sendRagMessage(message, config, provider)
+      case 'rag-llamaindex':
+        return this.sendRagLlamaIndexMessage(message, config, provider)
       case 'conversation':
         return this.sendConversationMessage(message, config, provider, conversationHistory)
       default:
@@ -132,6 +134,50 @@ export class ChatbotApiService {
 
       const response = await fetch(
         `${this.baseUrl}/api/v1/chat/rag?provider=${encodeURIComponent(provider)}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+        }
+      )
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(
+          errorData.detail || `Error del servidor: ${response.status} ${response.statusText}`
+        )
+      }
+
+      const data: ChatResponse = await response.json()
+      return data
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Error al comunicarse con el servidor: ${error.message}`)
+      }
+      throw new Error('Error desconocido al comunicarse con el servidor')
+    }
+  }
+
+  /**
+   * Chat con RAG usando LlamaIndex
+   */
+  private async sendRagLlamaIndexMessage(
+    message: string,
+    config: ChatbotConfig,
+    provider: string
+  ): Promise<ChatResponse> {
+    try {
+      const requestBody: ChatRagRequest = {
+        message,
+        user_id: this.userId,
+        n_results: config.nResults,
+        use_rerank: config.useRerank,
+      }
+
+      const response = await fetch(
+        `${this.baseUrl}/api/v1/chat/rag/with/llamaindex?provider=${encodeURIComponent(provider)}`,
         {
           method: 'POST',
           headers: {
