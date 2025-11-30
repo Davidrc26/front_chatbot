@@ -2,7 +2,7 @@
 
 import type { ChatbotConfig, Message } from '@/types/chatbot'
 
-const API_BASE_URL = 'http://localhost:8000' // Cambia el puerto si es necesario
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
 // Request simple
 export interface ChatSimpleRequest {
